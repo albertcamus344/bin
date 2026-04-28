@@ -1,0 +1,474 @@
+Experiment 1: Basic DDL and DML
+
+CREATE A DATABASE TABLE, ADD CONSTRAINTS (PRIMARY KEY, UNIQUE, CHECK, NOT NULL), INSERT ROWS, UPDATE AND DELETE ROWS USING SQL DDL AND DML COMMANDS.
+SQL
+
+CREATE TABLE users(
+  id INT PRIMARY KEY,
+  username VARCHAR(50) NOT NULL UNIQUE,
+  password VARCHAR(50) NOT NULL,
+  email VARCHAR(50) CHECK (email LIKE '%@%.%')
+);
+
+INSERT INTO users (id, username, password, email) VALUES
+(1, 'john_doe', 'password123',' john_doe@example.com'),
+(2, 'jane_doe', 'password456', 'jane_doe@example.com'),
+(3, 'bob_smith', 'password789', 'bob_smith@example.com');
+
+SELECT * FROM users;
+
+UPDATE users SET password = 'new_password' WHERE username = 'john_doe';
+SELECT * FROM users;
+
+DELETE FROM users WHERE username = 'bob_smith';
+SELECT * FROM users;
+
+Experiment 2: Foreign Keys & Referential Integrity
+
+CREATE A SET OF TABLES, ADD FOREIGN KEY CONSTRAINTS AND INCORPORATE REFERENTIAL INTEGRITY.
+SQL
+
+CREATE TABLE users2 (
+  user_id INT PRIMARY KEY,
+  username VARCHAR(50) NOT NULL,
+  email VARCHAR(50) NOT NULL,
+  password VARCHAR(50) NOT NULL
+);
+
+CREATE TABLE posts1 (
+  post_id INT PRIMARY KEY,
+  user_id INT NOT NULL,
+  title VARCHAR(100) NOT NULL,
+  content TEXT NOT NULL,
+  created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  FOREIGN KEY (user_id) REFERENCES users2(user_id) ON DELETE CASCADE
+);
+
+CREATE TABLE comments1 (
+  comment_id INT PRIMARY KEY,
+  user_id INT NOT NULL,
+  post_id INT NOT NULL,
+  content TEXT NOT NULL,
+  created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  FOREIGN KEY (post_id) REFERENCES posts1(post_id) ON DELETE CASCADE
+);
+
+INSERT INTO users2 VALUES (1, 'john_doe', 'john@example.com', 'password123');
+INSERT INTO posts1 (post_id, user_id, title, content) VALUES (1, 1, 'My First Post', 'This is the Content Of My First Post.');
+INSERT INTO comments1 (comment_id, user_id, post_id, content) VALUES (1, 1, 1, 'Great Post!');
+
+SELECT * FROM users2;
+SELECT * FROM posts1;
+SELECT * FROM comments1;
+
+DELETE FROM posts1 WHERE post_id = 1;
+SELECT * FROM posts1;
+
+Experiment 3: Where Clause & Aggregate Functions
+
+QUERY THE DATABASE TABLES USING DIFFERENT ‘WHERE’ CLAUSE CONDITIONS AND ALSO IMPLEMENT AGGREGATE FUNCTIONS.
+SQL
+
+CREATE TABLE sales(
+  SalesID int primary key,
+  Product varchar(50) not null,
+  Date date not null,
+  Quantity int not null,
+  Price decimal(10,2) not null
+);
+
+INSERT INTO sales(SalesID,Product,Date,Quantity,Price) VALUES
+(1,'Widget','2023-05-03',10,19.99),
+(2,'Gizmo','2023-05-03',5,12.99),
+(3,'Thing','2023-05-02',2,7.99),
+(4,'Widget','2023-05-01',10,19.99);
+
+SELECT * FROM sales WHERE Product = 'Widget';
+SELECT * FROM sales WHERE Quantity >= 10;
+SELECT * FROM sales WHERE Date = '2023-05-03';
+
+SELECT Product, COUNT(*) AS num_sales FROM sales GROUP BY Product;
+SELECT SUM(Quantity * Price) AS total_revenue, AVG(Price) AS avg_price FROM sales;
+SELECT SUM(Quantity * Price) AS total_revenue FROM sales WHERE Product = 'Gizmo';
+SELECT MAX(Price) AS max_price, MIN(Price) AS min_price FROM sales;
+SELECT AVG(Quantity) AS avg_quantity FROM sales WHERE date >= '2023-05-01';
+
+Experiment 4: Subqueries & Simple Joins
+
+QUERY THE DATABASE TABLES AND EXPLORE SUB QUERIES AND SIMPLE JOIN OPERATIONS.
+SQL
+
+CREATE TABLE customers1(
+  customer_id int primary key,
+  first_name varchar(50),
+  last_name varchar(50),
+  email varchar(100),
+  country varchar(50)
+);
+
+INSERT INTO customers1 VALUES
+(1,'John','Doe','johndoe@example.com','USA'),
+(2,'Jane','Doe','janedoe@example.com','Canada'),
+(3,'Bob','Smith','bobsmith@example.com','USA'),
+(4,'Alice','Johnson','alicejohnson@example.com','Australia');
+
+CREATE TABLE orders(
+  order_id int primary key,
+  order_date date,
+  total_amount decimal(10,2),
+  customer_id int,
+  foreign key (customer_id) references customers1(customer_id)
+);
+
+INSERT INTO orders (order_id,order_date,total_amount,customer_id) VALUES
+(1001,'2023-05-01',50.00,1),
+(1002,'2023-05-02',75.00,2),
+(1003,'2023-05-02',100.00,1),
+(1004,'2023-05-03',25.00,4),
+(1005,'2023-05-03',200.00,3);
+
+SELECT * FROM customers1;
+SELECT * FROM orders;
+
+SELECT order_id, customer_id, order_date, total_amount
+FROM orders
+WHERE customer_id IN (
+  SELECT customer_id FROM customers1 WHERE country ='USA'
+);
+
+SELECT customers1.customer_id, customers1.first_name, customers1.last_name, orders.order_id, orders.order_date, orders.total_amount
+FROM customers1
+INNER JOIN orders ON customers1.customer_id = orders.customer_id;
+
+SELECT customers1.first_name, orders.order_date, orders.total_amount
+FROM customers1
+LEFT JOIN orders ON customers1.customer_id = orders.customer_id;
+
+SELECT customers1.first_name, orders.order_date, orders.total_amount
+FROM customers1
+RIGHT JOIN orders ON customers1.customer_id = orders.customer_id;
+
+Experiment 5: Natural, Equi, and Outer Joins
+
+QUERY THE DATABASE TABLES AND EXPLORE NATURAL, EQUI AND OUTER JOINS.
+SQL
+
+CREATE TABLE customers2(
+  customer_id int primary key,
+  name varchar(50),
+  city varchar(50)
+);
+
+CREATE TABLE orders1 (
+  order_id int primary key,
+  customer_id int,
+  city varchar(50),
+  amount decimal(10,2),
+  foreign key (customer_id) references customers2(customer_id)
+);
+
+INSERT INTO customers2 VALUES(1,'Alice','London'), (2,'Bob','New York'), (3,'Charlie','Paris');
+SELECT * FROM customers2;
+
+INSERT INTO orders1 (order_id,customer_id,city,amount) VALUES
+(1,1,'London',100.00),
+(2,2,'London',200.00),
+(3,1,'Paris',150.00);
+
+SELECT * FROM customers2 NATURAL JOIN orders1;
+
+SELECT * FROM customers2
+JOIN orders1 ON customers2.customer_id=orders1.customer_id;
+
+SELECT * FROM customers2
+LEFT OUTER JOIN orders1 ON customers2.customer_id=orders1.customer_id;
+
+SELECT * FROM customers2
+RIGHT OUTER JOIN orders1 ON customers2.customer_id=orders1.customer_id;
+
+Experiment 6: Functions & Stored Procedures
+
+WRITE USER DEFINED FUNCTIONS AND STORED PROCEDURES IN SQL.
+SQL
+
+DELIMITER //
+CREATE FUNCTION add_numbers1(num1 INT, num2 INT)
+RETURNS INT DETERMINISTIC BEGIN
+  DECLARE result INT;
+  SET result = num1 + num2;
+  RETURN result;
+END//
+DELIMITER ;
+
+SELECT add_numbers1(2,3);
+
+CREATE TABLE customers(
+  customer_id int primary key,
+  customer_name varchar(50),
+  country varchar(50)
+);
+
+INSERT INTO customers VALUES
+(1,'John','USA'),
+(2,'Jane','Canada'),
+(3,'Bob','USA'),
+(4,'Alice','Australia');
+
+SELECT * FROM customers;
+
+DELIMITER $$
+CREATE PROCEDURE get_customer_by_country(IN country_name VARCHAR(50))
+BEGIN
+  SELECT * FROM customers WHERE country = country_name;
+END$$
+DELIMITER ;
+
+CALL get_customer_by_country('USA');
+
+Experiment 7: DCL and TCL Commands
+
+EXECUTE COMPLEX TRANSACTIONS AND REALIZE DCL AND TCL COMMANDS.
+SQL
+
+SHOW DATABASES;
+USE mysql;
+
+CREATE TABLE employees(
+  id int auto_increment primary key,
+  first_name varchar(50) not null,
+  last_name varchar(50) not null,
+  email varchar(100) not null,
+  phone varchar(20),
+  hire_date date not null,
+  job_title varchar(50) not null,
+  department varchar(50) not null,
+  salary decimal(10,2) not null
+);
+
+INSERT INTO employees VALUES
+(1,"hasan","mustafa","hm@ex.com","HM","2023-05-05","Data Scientist","CSE",60000),
+(2,"naveen","raj","nr@ex.com","NR","2023-05-04","Software Developer","CSE",55000),
+(3,"nikhil","srinivasan","ns@ex.com","NS","2023-05-03","Web Developer","CSE",50000);
+
+START TRANSACTION;
+UPDATE employees SET salary = 50000 WHERE id = 3;
+INSERT INTO employees VALUES (4,"John","Doe","jd@ex.com","JD","2023-05-05","Software Engineer","CSE",60000);
+COMMIT;
+
+SELECT * FROM employees;
+
+GRANT SELECT ON employees TO 'root'@'localhost';
+REVOKE SELECT ON employees FROM 'root'@'localhost';
+
+Experiment 8: SQL Triggers
+
+WRITE SQL TRIGGERS FOR INSERT, DELETE, AND UPDATE OPERATIONS IN A DATABASE TABLE.
+SQL
+
+CREATE TABLE users(
+    id int primary key not null,
+    age int
+);
+
+CREATE TABLE audit_table(
+    inserted_id int,
+    inserted_data int,
+    deleted_id int,
+    deleted_data int,
+    updated_id int,
+    old_data int,
+    new_data int
+);
+
+DELIMITER $$
+
+CREATE TRIGGER insert_trigger1
+AFTER INSERT ON users
+FOR EACH ROW
+BEGIN
+    INSERT INTO audit_table (inserted_id, inserted_data)
+    VALUES (NEW.id, NEW.age);
+END $$
+
+CREATE TRIGGER delete_trigger1
+AFTER DELETE ON users
+FOR EACH ROW
+BEGIN
+    INSERT INTO audit_table (deleted_id, deleted_data)
+    VALUES (OLD.id, OLD.age);
+END $$
+
+CREATE TRIGGER update_trigger1
+AFTER UPDATE ON users
+FOR EACH ROW
+BEGIN
+    INSERT INTO audit_table (updated_id, old_data, new_data)
+    VALUES (NEW.id, OLD.age, NEW.age);
+END $$
+
+DELIMITER ;
+
+INSERT INTO users VALUES (1, 25);
+UPDATE users SET age = 30 WHERE id = 1;
+DELETE FROM users WHERE id = 1;
+
+SELECT * FROM audit_table;
+
+Experiment 9: Views and Indexing
+
+CREATE VIEW AND INDEX FOR DATABASE TABLES WITH A LARGE NUMBER OF RECORDS.
+SQL
+
+CREATE TABLE orders5(
+  order_id int primary key,
+  customer_id int not null,
+  order_date date not null,
+  order_total decimal(10,2) not null,
+  ship_address varchar(255),
+  ship_city varchar(50),
+  ship_country varchar(50)
+);
+
+INSERT INTO orders5 VALUES
+(1,123,'2023-05-04',50.00,'123 Main St','Anytown','USA'),
+(2,456,'2023-05-05',75.00,'456 Elm St','Other town','Canada'),
+(3,789,'2023-05-06',100.00,'123 Oak St','Another town','Mexico');
+
+CREATE VIEW orders_by_country1 AS
+SELECT order_id, customer_id, order_date, order_total, ship_address, ship_city, ship_country
+FROM orders5
+WHERE ship_country ='USA';
+
+CREATE INDEX my_index_name ON orders5(customer_id);
+
+SELECT * FROM orders_by_country1;
+
+Experiment 10: XML Database & Schema
+
+CREATE AN XML DATABASE AND VALIDATE IT USING XML SCHEMA.
+XML Database
+XML
+
+<?xml version="1.0" encoding="UTF-8"?>
+<library>
+  <book id="001">
+    <title>The Catcher in the Rye</title>
+    <author>J.D. Salinger</author>
+    <year>1951</year>
+  </book>
+  <book id="002">
+    <title>To Kill a Mockingbird</title>
+    <author>Harper Lee</author>
+    <year>1960</year>
+  </book>
+  <book id="003">
+    <title>1984</title>
+    <author>George Orwell</author>
+    <year>1949</year>
+  </book>
+</library>
+
+XSD Schema
+XML
+
+<?xml version="1.0" encoding="UTF-8"?>
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema">
+  <xs:element name="library">
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element name="book" maxOccurs="unbounded">
+          <xs:complexType>
+            <xs:sequence>
+              <xs:element name="title" type="xs:string"/>
+              <xs:element name="author" type="xs:string"/>
+              <xs:element name="year" type="xs:gYear"/>
+            </xs:sequence>
+            <xs:attribute name="id" type="xs:string" use="required"/>
+          </xs:complexType>
+        </xs:element>
+      </xs:sequence>
+    </xs:complexType>
+  </xs:element>
+</xs:schema>
+
+Experiment 11: NoSQL Models
+
+CREATE DOCUMENT, COLUMN AND GRAPH-BASED DATA USING NOSQL DATABASE
+DOCUMENT
+JSON
+
+{
+  "name": "John Doe",
+  "age": 35,
+  "email": "johndoe@example.com",
+  "address": {
+    "street": "123 Main St",
+    "city": "Anytown",
+    "state": "CA",
+    "zip": "12345"
+  }
+}
+
+COLUMN
+JSON
+
+{
+  "name": 1,
+  "age": 1
+}
+
+Experiment 12: GUI Application
+
+DEVELOP A SIMPLE GUI BASED DATABASE APPLICATION AND INCORPORATE ALL THE ABOVE-MENTIONED FEATURES
+SQL Code
+SQL
+
+CREATE TABLE customers (
+  id INT(11) NOT NULL AUTO_INCREMENT,
+  name VARCHAR(255) NOT NULL,
+  email VARCHAR(255) NOT NULL,
+  PRIMARY KEY (id)
+);
+
+SELECT * FROM customers;
+
+Python Code
+Python
+
+import tkinter as tk
+import mysql.connector
+
+mydb = mysql.connector.connect(
+    host="127.0.0.1",
+    user="root",
+    password="hasan@123",
+    database="mysql"
+)
+
+mycursor = mydb.cursor()
+root = tk.Tk()
+root.title("MySQL GUI")
+
+label1 = tk.Label(root, text="Name:")
+label1.grid(row=0, column=0)
+entry1 = tk.Entry(root)
+entry1.grid(row=0, column=1)
+
+label2 = tk.Label(root, text="Age:")
+label2.grid(row=1, column=0)
+entry2 = tk.Entry(root)
+entry2.grid(row=1, column=1)
+
+def insert_data():
+    name = entry1.get()
+    age = entry2.get()
+    sql = "INSERT INTO customers (name, email) VALUES (%s, %s)"
+    val = (name, age)
+    mycursor.execute(sql, val)
+    mydb.commit()
+    print(mycursor.rowcount, "record inserted.")
+
+button1 = tk.Button(root, text="Insert", command=insert_data)
+button1.grid(row=2, column=1)
+
+root.mainloop()
