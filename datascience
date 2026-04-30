@@ -1,0 +1,51 @@
+Normal curve:
+
+import numpy as np
+import matplotlib.pyplot as plt
+from scipy.stats import norm
+import pandas as pd
+
+# Load dataset directly from URL
+url = "https://gist.githubusercontent.com/netj/8836201/raw/6f9306ad21398ea43cba4f7d537619d0e07d5ae3/iris.csv"
+df = pd.read_csv(url)
+
+# X values
+x_axis = np.arange(-20, 20, 0.01)
+
+# Mean and standard deviation
+mean = df["sepal.length"].mean()
+sd = df["sepal.width"].std()
+
+# Plot
+plt.plot(x_axis, norm.pdf(x_axis, mean, sd))
+plt.show()
+
+
+
+
+Histogram:
+
+import matplotlib.pyplot as plt
+import pandas as pd
+import numpy as np
+
+# Load dataset from URL
+url = "https://gist.githubusercontent.com/netj/8836201/raw/6f9306ad21398ea43cba4f7d537619d0e07d5ae3/iris.csv"
+df = pd.read_csv(url)
+
+# Select data
+data = df['sepal.length']
+
+# Create bins
+bins = np.arange(min(data), max(data) + 1, 1)
+
+# Plot histogram
+plt.hist(data, bins=bins, density=True)
+
+# Labels
+plt.ylabel('Density')
+plt.xlabel('Sepal Length')
+
+plt.show()
+
+
